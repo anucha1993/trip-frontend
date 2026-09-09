@@ -24,7 +24,13 @@ type DailyRow = {
   first_check_in: string | null;
   last_check_out: string | null;
   total_hours: number;
-  events: { type: string; scanned_at: string; location: string | null }[];
+  events: {
+    type: string;
+    scanned_at: string;
+    location: string | null;
+    latitude: number | null;
+    longitude: number | null;
+  }[];
 };
 
 const statusStyles: Record<Status, string> = {
@@ -222,6 +228,21 @@ function DailyReportContent() {
                             {event.type === "check_in" ? "เข้า" : "ออก"} —{" "}
                             {dayjs(event.scanned_at).format("HH:mm")} (
                             {event.location ?? "-"})
+                            {event.latitude !== null && event.longitude !== null ? (
+                              <>
+                                {" "}
+                                <a
+                                  href={`https://www.google.com/maps?q=${event.latitude},${event.longitude}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-emerald-600 underline"
+                                >
+                                  📍 {event.latitude.toFixed(5)}, {event.longitude.toFixed(5)}
+                                </a>
+                              </>
+                            ) : (
+                              <span className="ml-1 text-red-500">(ไม่มีพิกัด)</span>
+                            )}
                           </li>
                         ))}
                       </ul>
