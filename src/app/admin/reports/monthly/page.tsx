@@ -12,6 +12,9 @@ type MonthlyRow = {
   display_name: string;
   full_name: string | null;
   days_present: number;
+  days_late: number;
+  days_absent: number;
+  days_leave: number;
   total_hours: number;
 };
 
@@ -63,21 +66,24 @@ function MonthlyReportContent() {
             <tr>
               <th className="px-5 py-3 font-medium">พนักงาน</th>
               <th className="px-5 py-3 font-medium">ชื่อ-สกุล / รหัส</th>
-              <th className="px-5 py-3 font-medium">จำนวนวันที่มาทำงาน</th>
+              <th className="px-5 py-3 font-medium">มาปกติ</th>
+              <th className="px-5 py-3 font-medium">มาสาย</th>
+              <th className="px-5 py-3 font-medium">ขาดงาน</th>
+              <th className="px-5 py-3 font-medium">ลา</th>
               <th className="px-5 py-3 font-medium">ชั่วโมงทำงานรวม</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={4} className="px-5 py-6 text-center text-slate-400">
+                <td colSpan={7} className="px-5 py-6 text-center text-slate-400">
                   กำลังโหลด...
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-6 text-center text-slate-400">
+                <td colSpan={7} className="px-5 py-6 text-center text-slate-400">
                   ไม่มีข้อมูลในเดือนนี้
                 </td>
               </tr>
@@ -93,8 +99,17 @@ function MonthlyReportContent() {
                     {row.employee_code || "-"}
                   </p>
                 </td>
-                <td className="px-5 py-3 text-slate-500">
+                <td className="px-5 py-3 font-medium text-emerald-700">
                   {row.days_present} วัน
+                </td>
+                <td className="px-5 py-3 font-medium text-amber-700">
+                  {row.days_late} วัน
+                </td>
+                <td className="px-5 py-3 font-medium text-red-600">
+                  {row.days_absent} วัน
+                </td>
+                <td className="px-5 py-3 font-medium text-sky-700">
+                  {row.days_leave} วัน
                 </td>
                 <td className="px-5 py-3 text-slate-500">
                   {row.total_hours} ชม.
