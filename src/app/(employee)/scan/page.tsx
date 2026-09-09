@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import RequireEmployee from "@/components/employee/RequireEmployee";
 import BottomNav from "@/components/employee/BottomNav";
 import { apiErrorMessage, employeeApi } from "@/lib/api";
+import { requestCurrentPosition } from "@/lib/geo";
 
 type ScanResult = {
   status: "success" | "error";
@@ -28,8 +29,34 @@ function ScanContent() {
   const [scanning, setScanning] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const busyRef = useRef(false);
+  const [position, setPosition] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [requestingLocation, setRequestingLocation] = useState(false);
+
+  async function requestLocation() {
+    setRequestingLocation(true);
+    setLocationError(null);
+    try {
+      const pos = await requestCurrentPosition();
+      setPosition(pos);
+    } catch (err) {
+      setLocationError(err instanceof Error ? err.message : "ไม่สามารถอ่านตำแหน่งได้");
+    } finally {
+      setRequestingLocation(false);
+    }
+  }
 
   useEffect(() => {
+    requestLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!position) return;
+
     let cancelled = false;
 
     async function start() {
@@ -71,10 +98,10 @@ function ScanContent() {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [position]);
 
   async function handleDecoded(decodedText: string) {
-    if (busyRef.current) return;
+    if (busyRef.current || !position) return;
     busyRef.current = true;
 
     try {
@@ -86,6 +113,8 @@ function ScanContent() {
     try {
       const { data } = await employeeApi.post("/attendance/scan", {
         qr_token: decodedText,
+        latitude: position.latitude,
+        longitude: position.longitude,
       });
       setResult({
         status: "success",
@@ -103,6 +132,36 @@ function ScanContent() {
     setResult(null);
     busyRef.current = false;
     scannerRef.current?.resume();
+  }
+
+  if (!position) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+        <p className="text-3xl">📍</p>
+        <h1 className="text-lg font-bold text-slate-900">
+          ต้องอนุญาตการเข้าถึงตำแหน่งก่อนสแกน
+        </h1>
+        <p className="text-sm text-slate-500">
+          ระบบต้องบันทึกตำแหน่งที่คุณลงเวลาทุกครั้ง กรุณากดอนุญาตเมื่อเบราว์เซอร์ถาม
+        </p>
+        {locationError && (
+          <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">
+            {locationError}
+          </p>
+        )}
+        <button
+          onClick={requestLocation}
+          disabled={requestingLocation}
+          className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md disabled:opacity-50"
+        >
+          {requestingLocation
+            ? "กำลังขอตำแหน่ง..."
+            : locationError
+              ? "ลองใหม่อีกครั้ง"
+              : "📍 อนุญาตให้เข้าถึงตำแหน่ง"}
+        </button>
+      </div>
+    );
   }
 
   return (

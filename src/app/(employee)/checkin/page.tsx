@@ -1,9 +1,11 @@
 "use client";
 
+import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useEmployeeAuth } from "@/context/EmployeeAuthContext";
 import { apiErrorMessage, employeeApi } from "@/lib/api";
+import { requestCurrentPosition } from "@/lib/geo";
 
 type ScanResult = {
   status: "success" | "error";
@@ -28,6 +30,45 @@ function CheckinContent() {
   const token = searchParams.get("token");
   const [result, setResult] = useState<ScanResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [requestingLocation, setRequestingLocation] = useState(false);
+
+  function submitWithLocation() {
+    if (!token) return;
+    setLocationError(null);
+    setRequestingLocation(true);
+    requestCurrentPosition()
+      .then((position) => {
+        setRequestingLocation(false);
+        setSubmitting(true);
+        return employeeApi.post("/attendance/scan", {
+          qr_token: token,
+          latitude: position.latitude,
+          longitude: position.longitude,
+        });
+      })
+      .then(({ data }) => {
+        setResult({
+          status: "success",
+          message: data.message,
+          type: data.attendance.type,
+          time: data.attendance.scanned_at,
+          location: data.attendance.location,
+        });
+      })
+      .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          setResult({ status: "error", message: apiErrorMessage(error) });
+          return;
+        }
+        // Geolocation permission/timeout error, not an API error.
+        setRequestingLocation(false);
+        setLocationError(
+          error instanceof Error ? error.message : "ไม่สามารถอ่านตำแหน่งได้"
+        );
+      })
+      .finally(() => setSubmitting(false));
+  }
 
   useEffect(() => {
     if (loading) return;
@@ -43,28 +84,33 @@ function CheckinContent() {
       return;
     }
 
-    setSubmitting(true);
-    employeeApi
-      .post("/attendance/scan", { qr_token: token })
-      .then(({ data }) => {
-        setResult({
-          status: "success",
-          message: data.message,
-          type: data.attendance.type,
-          time: data.attendance.scanned_at,
-          location: data.attendance.location,
-        });
-      })
-      .catch((error) => {
-        setResult({ status: "error", message: apiErrorMessage(error) });
-      })
-      .finally(() => setSubmitting(false));
+    submitWithLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, employee, token]);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-      {submitting && <p className="text-slate-400">กำลังลงเวลา...</p>}
+      {(submitting || requestingLocation) && !locationError && (
+        <p className="text-slate-400">
+          {requestingLocation ? "กำลังขอตำแหน่งของคุณ..." : "กำลังลงเวลา..."}
+        </p>
+      )}
+
+      {locationError && !result && (
+        <div className="w-full max-w-sm rounded-2xl border border-red-200 bg-red-50 p-6 shadow-sm">
+          <p className="text-3xl">📍</p>
+          <p className="mt-2 font-semibold text-red-600">{locationError}</p>
+          <p className="mt-1 text-sm text-slate-500">
+            ระบบต้องบันทึกตำแหน่งที่คุณลงเวลาทุกครั้ง
+          </p>
+          <button
+            onClick={submitWithLocation}
+            className="mt-4 rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white"
+          >
+            ลองใหม่อีกครั้ง
+          </button>
+        </div>
+      )}
 
       {result && (
         <div
