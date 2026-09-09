@@ -8,7 +8,9 @@ import { adminApi } from "@/lib/api";
 
 type MonthlyRow = {
   employee_id: number;
+  employee_code: string | null;
   display_name: string;
+  full_name: string | null;
   days_present: number;
   total_hours: number;
 };
@@ -60,6 +62,7 @@ function MonthlyReportContent() {
           <thead className="bg-slate-50 text-slate-500">
             <tr>
               <th className="px-5 py-3 font-medium">พนักงาน</th>
+              <th className="px-5 py-3 font-medium">ชื่อ-สกุล / รหัส</th>
               <th className="px-5 py-3 font-medium">จำนวนวันที่มาทำงาน</th>
               <th className="px-5 py-3 font-medium">ชั่วโมงทำงานรวม</th>
             </tr>
@@ -67,14 +70,14 @@ function MonthlyReportContent() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={3} className="px-5 py-6 text-center text-slate-400">
+                <td colSpan={4} className="px-5 py-6 text-center text-slate-400">
                   กำลังโหลด...
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-5 py-6 text-center text-slate-400">
+                <td colSpan={4} className="px-5 py-6 text-center text-slate-400">
                   ไม่มีข้อมูลในเดือนนี้
                 </td>
               </tr>
@@ -83,6 +86,12 @@ function MonthlyReportContent() {
               <tr key={row.employee_id} className="border-t border-slate-100">
                 <td className="px-5 py-3 font-medium text-slate-700">
                   {row.display_name}
+                </td>
+                <td className="px-5 py-3 text-slate-500">
+                  <p>{row.full_name || "-"}</p>
+                  <p className="text-xs text-slate-400">
+                    {row.employee_code || "-"}
+                  </p>
                 </td>
                 <td className="px-5 py-3 text-slate-500">
                   {row.days_present} วัน

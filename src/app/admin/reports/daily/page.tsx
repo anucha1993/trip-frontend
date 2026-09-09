@@ -8,7 +8,9 @@ import { adminApi } from "@/lib/api";
 
 type DailyRow = {
   employee_id: number;
+  employee_code: string | null;
   display_name: string;
+  full_name: string | null;
   first_check_in: string | null;
   last_check_out: string | null;
   total_hours: number;
@@ -63,6 +65,7 @@ function DailyReportContent() {
           <thead className="bg-slate-50 text-slate-500">
             <tr>
               <th className="px-5 py-3 font-medium">พนักงาน</th>
+              <th className="px-5 py-3 font-medium">ชื่อ-สกุล / รหัส</th>
               <th className="px-5 py-3 font-medium">เข้างานครั้งแรก</th>
               <th className="px-5 py-3 font-medium">ออกงานครั้งสุดท้าย</th>
               <th className="px-5 py-3 font-medium">ชั่วโมงทำงานรวม</th>
@@ -72,14 +75,14 @@ function DailyReportContent() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={5} className="px-5 py-6 text-center text-slate-400">
+                <td colSpan={6} className="px-5 py-6 text-center text-slate-400">
                   กำลังโหลด...
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-6 text-center text-slate-400">
+                <td colSpan={6} className="px-5 py-6 text-center text-slate-400">
                   ไม่มีข้อมูลในวันนี้
                 </td>
               </tr>
@@ -89,6 +92,12 @@ function DailyReportContent() {
                 <tr className="border-t border-slate-100">
                   <td className="px-5 py-3 font-medium text-slate-700">
                     {row.display_name}
+                  </td>
+                  <td className="px-5 py-3 text-slate-500">
+                    <p>{row.full_name || "-"}</p>
+                    <p className="text-xs text-slate-400">
+                      {row.employee_code || "-"}
+                    </p>
                   </td>
                   <td className="px-5 py-3 text-slate-500">
                     {row.first_check_in
@@ -118,7 +127,7 @@ function DailyReportContent() {
                 </tr>
                 {expanded === row.employee_id && (
                   <tr className="border-t border-slate-100 bg-slate-50">
-                    <td colSpan={5} className="px-5 py-3">
+                    <td colSpan={6} className="px-5 py-3">
                       <ul className="space-y-1 text-xs text-slate-500">
                         {row.events.map((event, idx) => (
                           <li key={idx}>

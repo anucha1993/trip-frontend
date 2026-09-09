@@ -74,6 +74,18 @@ function EmployeesContent() {
     load();
   }
 
+  async function removeEmployee(employee: Employee) {
+    if (
+      !confirm(
+        `ลบข้อมูลพนักงาน "${employee.display_name}" ถาวร? ประวัติการลงเวลาของพนักงานคนนี้จะถูกลบไปด้วย และไม่สามารถกู้คืนได้`
+      )
+    ) {
+      return;
+    }
+    await adminApi.delete(`/admin/employees/${employee.id}`);
+    load();
+  }
+
   function startEdit(employee: Employee) {
     setEditingId(employee.id);
     setError(null);
@@ -212,9 +224,15 @@ function EmployeesContent() {
                     </button>
                     <button
                       onClick={() => toggleActive(employee)}
-                      className="text-xs font-medium text-slate-500 underline"
+                      className="mr-3 text-xs font-medium text-slate-500 underline"
                     >
                       {employee.is_active ? "ระงับ" : "เปิดใช้งาน"}
+                    </button>
+                    <button
+                      onClick={() => removeEmployee(employee)}
+                      className="text-xs font-medium text-red-600 underline"
+                    >
+                      ลบ
                     </button>
                   </td>
                 </tr>

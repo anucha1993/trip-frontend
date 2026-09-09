@@ -48,7 +48,23 @@ npm run dev
 | `/history` | ประวัติการลงเวลาของตนเอง |
 | `/admin/login` | เข้าสู่ระบบ SuperAdmin |
 | `/admin` | แดชบอร์ดภาพรวม |
-| `/admin/employees` | จัดการพนักงาน (เปิด/ปิดใช้งาน) |
+| `/admin/employees` | จัดการพนักงาน (เปิด/ปิดใช้งาน, ชื่อจริง/แผนก/ตำแหน่ง) |
 | `/admin/locations` | สร้าง/จัดการจุดสแกน QR พร้อมพิมพ์ QR Code |
 | `/admin/reports/daily` | รายงานประจำวัน |
 | `/admin/reports/monthly` | รายงานประจำเดือน |
+| `/admin/settings` | เปลี่ยนรหัสผ่าน SuperAdmin |
+
+## Deploy บน Plesk (Node.js / Passenger hosting)
+
+โปรเจกต์นี้มีไฟล์ `server.js` ที่ root ไว้ให้แล้ว สำหรับ host ที่ต้องการไฟล์ startup แบบธรรมดา
+(เช่น Plesk's Passenger) แทนที่จะเรียก `next start` โดยตรง
+
+1. อัปโหลดโค้ดทั้งโฟลเดอร์ขึ้นเซิร์ฟเวอร์ (เช่น `httpdocs/`)
+2. ตั้งค่า **Custom environment variables** ใน Plesk ให้มี `NEXT_PUBLIC_API_URL` ชี้ไป backend จริง
+   — **ต้องตั้งค่านี้ก่อน build** เพราะ Next.js ฝังค่า `NEXT_PUBLIC_*` ตอน build ไม่ใช่ตอนรัน
+3. กด **NPM install**
+4. กด **Run script** → รัน `npm run build`
+5. ตั้ง **Application Startup File** เป็น `server.js` (อยู่ที่ root ของโปรเจกต์ ไม่ใช่ path ซ้อนโฟลเดอร์)
+6. กด **Restart App**
+
+Passenger จะเซ็ต `PORT` ให้อัตโนมัติ ซึ่ง `server.js` อ่านจาก `process.env.PORT` อยู่แล้ว

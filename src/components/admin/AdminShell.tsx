@@ -10,6 +10,8 @@ const navItems = [
   { href: "/admin/locations", label: "จุดสแกน QR", icon: "📍" },
   { href: "/admin/reports/daily", label: "รายงานประจำวัน", icon: "📅" },
   { href: "/admin/reports/monthly", label: "รายงานประจำเดือน", icon: "🗓️" },
+  { href: "/admin/holidays", label: "วันหยุดประจำปี", icon: "🎌" },
+  { href: "/admin/leaves", label: "การลางาน", icon: "📝" },
   { href: "/admin/settings", label: "ตั้งค่า", icon: "⚙️" },
 ];
 
