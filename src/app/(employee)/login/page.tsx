@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useEmployeeAuth } from "@/context/EmployeeAuthContext";
 
 export default function LoginPage() {
@@ -17,6 +17,17 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const [redirecting, setRedirecting] = useState(false);
+
+  function handleLogin() {
+    // Guard against rapid double-taps starting two separate OAuth flows —
+    // each call creates a new "state" in the session, so a second tap before
+    // the first navigation completes clobbers the first flow's state and
+    // causes InvalidStateException when LINE redirects back.
+    if (redirecting) return;
+    setRedirecting(true);
+    loginWithLine();
+  }
 
   useEffect(() => {
     if (!loading && employee) {
@@ -54,11 +65,12 @@ function LoginContent() {
       )}
 
       <button
-        onClick={loginWithLine}
-        className="flex w-full max-w-xs items-center justify-center gap-2 rounded-xl bg-[#06C755] px-5 py-3 font-semibold text-white shadow-md shadow-emerald-200 transition hover:brightness-95 active:scale-[0.98]"
+        onClick={handleLogin}
+        disabled={redirecting}
+        className="flex w-full max-w-xs items-center justify-center gap-2 rounded-xl bg-[#06C755] px-5 py-3 font-semibold text-white shadow-md shadow-emerald-200 transition hover:brightness-95 active:scale-[0.98] disabled:opacity-60"
       >
         <span className="text-lg">💬</span>
-        เข้าสู่ระบบด้วย LINE
+        {redirecting ? "กำลังเปิด LINE..." : "เข้าสู่ระบบด้วย LINE"}
       </button>
 
       <p className="max-w-xs text-xs text-slate-400">

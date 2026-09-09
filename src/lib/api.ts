@@ -59,3 +59,23 @@ export function apiErrorMessage(error: unknown): string {
   }
   return "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
 }
+
+/**
+ * Download a file from an authenticated (Bearer token) endpoint. A plain
+ * <a href> can't send the Authorization header, so fetch it as a blob first.
+ */
+export async function downloadFile(
+  url: string,
+  params: Record<string, string | undefined>,
+  filename: string
+) {
+  const response = await adminApi.get(url, { params, responseType: "blob" });
+  const blobUrl = window.URL.createObjectURL(response.data as Blob);
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
+}

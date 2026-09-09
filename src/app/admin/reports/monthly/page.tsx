@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import RequireAdmin from "@/components/admin/RequireAdmin";
 import AdminShell from "@/components/admin/AdminShell";
-import { adminApi } from "@/lib/api";
+import { adminApi, downloadFile } from "@/lib/api";
 
 type MonthlyRow = {
   employee_id: number;
@@ -32,6 +32,7 @@ function MonthlyReportContent() {
   const [month, setMonth] = useState(dayjs().format("YYYY-MM"));
   const [rows, setRows] = useState<MonthlyRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -40,6 +41,19 @@ function MonthlyReportContent() {
       .then(({ data }) => setRows(data.rows))
       .finally(() => setLoading(false));
   }, [month]);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadFile(
+        "/admin/reports/monthly/export",
+        { month },
+        `monthly-report-${month}.csv`
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
 
   return (
     <div>
@@ -52,12 +66,21 @@ function MonthlyReportContent() {
             สรุปจำนวนวันทำงานและชั่วโมงรวมของแต่ละพนักงาน
           </p>
         </div>
-        <input
-          type="month"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-        />
+        <div className="flex items-center gap-3">
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+          />
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+          >
+            {exporting ? "กำลังส่งออก..." : "📥 ส่งออก Excel"}
+          </button>
+        </div>
       </div>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

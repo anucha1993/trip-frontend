@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import RequireAdmin from "@/components/admin/RequireAdmin";
 import AdminShell from "@/components/admin/AdminShell";
-import { adminApi } from "@/lib/api";
+import { adminApi, downloadFile } from "@/lib/api";
 
 type Status =
   | "present"
@@ -73,6 +73,7 @@ function DailyReportContent() {
   const [holidayName, setHolidayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -86,6 +87,19 @@ function DailyReportContent() {
       .finally(() => setLoading(false));
   }, [date]);
 
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadFile(
+        "/admin/reports/daily/export",
+        { date },
+        `daily-report-${date}.csv`
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -97,12 +111,21 @@ function DailyReportContent() {
             สรุปเวลาเข้า-ออกงานรายวันของพนักงานแต่ละคน
           </p>
         </div>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-        />
+        <div className="flex items-center gap-3">
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+          />
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+          >
+            {exporting ? "กำลังส่งออก..." : "📥 ส่งออก Excel"}
+          </button>
+        </div>
       </div>
 
       {dayType !== "working" && (
