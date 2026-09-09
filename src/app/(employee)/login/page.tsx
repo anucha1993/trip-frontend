@@ -27,9 +27,11 @@ function LoginContent() {
   const errorMessage =
     error === "account_disabled"
       ? "บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ"
-      : error === "line_auth_failed"
-        ? "เข้าสู่ระบบด้วย LINE ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"
-        : null;
+      : error === "code_reused"
+        ? "เข้าสู่ระบบไม่สำเร็จ เนื่องจากเปิดลิงก์ผ่านเบราว์เซอร์ในแอปแชท (เช่น LINE) กรุณาคัดลอกลิงก์ไปเปิดใน Safari/Chrome โดยตรง แล้วลองใหม่อีกครั้ง"
+        : error === "line_auth_failed"
+          ? "เข้าสู่ระบบด้วย LINE ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"
+          : null;
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 text-center">
