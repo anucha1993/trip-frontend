@@ -5,7 +5,9 @@ const { createServer } = require("http");
 const next = require("next");
 
 const port = process.env.PORT || 1001;
-const app = next({ dev: false });
+// Resolve relative to this file (not process.cwd()) so it works regardless
+// of the working directory the host (e.g. Passenger) launches it from.
+const app = next({ dev: false, dir: __dirname });
 const handle = app.getRequestHandler();
 
 app
