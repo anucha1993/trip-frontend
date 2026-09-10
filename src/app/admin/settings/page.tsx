@@ -47,8 +47,10 @@ type WorkSettings = {
   late_grace_minutes: number;
   weekly_off_day: number;
   alt_saturday_enabled: boolean;
-  alternate_scan_mode: boolean;
-  min_scan_interval_minutes: number;
+  check_in_window_start: string;
+  check_in_window_end: string;
+  check_out_window_start: string;
+  check_out_window_end: string;
 };
 
 function WorkTimeSettingsForm() {
@@ -68,8 +70,10 @@ function WorkTimeSettingsForm() {
           late_grace_minutes: data.late_grace_minutes,
           weekly_off_day: data.weekly_off_day,
           alt_saturday_enabled: data.alt_saturday_enabled,
-          alternate_scan_mode: data.alternate_scan_mode,
-          min_scan_interval_minutes: data.min_scan_interval_minutes,
+          check_in_window_start: data.check_in_window_start.slice(0, 5),
+          check_in_window_end: data.check_in_window_end.slice(0, 5),
+          check_out_window_start: data.check_out_window_start.slice(0, 5),
+          check_out_window_end: data.check_out_window_end.slice(0, 5),
         })
       )
       .finally(() => setLoading(false));
@@ -190,50 +194,60 @@ function WorkTimeSettingsForm() {
               }
               className="h-4 w-4 rounded border-slate-300"
             />
-            เปิดใช้ &quot;เสาร์เว้เสาร์&quot; (เสาร์แรกของเดือนทำงานเสมอ สลับหยุด-ทำงานทุกสัปดาห์)
+            เปิดใช้ &quot;เสาร์เว้นเสาร์&quot; (เสาร์แรกของเดือนทำงานเสมอ สลับหยุด-ทำงานทุกสัปดาห์)
           </label>
 
           <div className="border-t border-slate-100 pt-4">
-            <label className="flex items-center gap-2 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                checked={settings.alternate_scan_mode}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    alternate_scan_mode: e.target.checked,
-                  })
-                }
-                className="h-4 w-4 rounded border-slate-300"
-              />
-              เปิดใช้โหมดสลับเข้า-ออกทุกครั้งที่สแกน (สำหรับพักเที่ยง/ออกนอกสถานที่หลายรอบ)
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              ช่วงเวลาสแกนเข้างาน
             </label>
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="time"
+                value={settings.check_in_window_start}
+                onChange={(e) =>
+                  setSettings({ ...settings, check_in_window_start: e.target.value })
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              />
+              <input
+                type="time"
+                value={settings.check_in_window_end}
+                onChange={(e) =>
+                  setSettings({ ...settings, check_in_window_end: e.target.value })
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
             <p className="mt-1 text-xs text-slate-400">
-              ค่าเริ่มต้น (ปิดอยู่): สแกนครั้งแรกของวันคือ &quot;เข้า&quot; เสมอ
-              และทุกครั้งหลังจากนั้นคือ &quot;ออก&quot; เสมอ ไม่ว่าจะสแกนกี่ครั้งก็ตาม —
-              ถ้าเปิดใช้ จะสลับเข้า/ออกทุกครั้งที่สแกนแทน
+              สแกนในช่วงเวลานี้จะนับเป็น &quot;เข้างาน&quot; เสมอ สแกนได้กี่ครั้งก็ได้ภายในช่วงนี้
             </p>
           </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
-              ระยะห่างขั้นต่ำระหว่างการสแกน (นาที)
+              ช่วงเวลาสแกนออกงาน
             </label>
-            <input
-              type="number"
-              min={0}
-              max={180}
-              value={settings.min_scan_interval_minutes}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  min_scan_interval_minutes: Number(e.target.value),
-                })
-              }
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="time"
+                value={settings.check_out_window_start}
+                onChange={(e) =>
+                  setSettings({ ...settings, check_out_window_start: e.target.value })
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              />
+              <input
+                type="time"
+                value={settings.check_out_window_end}
+                onChange={(e) =>
+                  setSettings({ ...settings, check_out_window_end: e.target.value })
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
             <p className="mt-1 text-xs text-slate-400">
-              ถ้าสแกนถี่กว่านี้ ระบบจะปฏิเสธและแจ้งให้รอ (0 = ไม่จำกัด) ป้องกันสแกนซ้ำโดยไม่ตั้งใจ
+              สแกนในช่วงเวลานี้จะนับเป็น &quot;ออกงาน&quot; เสมอ สแกนได้กี่ครั้งก็ได้ภายในช่วงนี้ สองช่วงต้องไม่ทับซ้อนกัน
             </p>
           </div>
         </div>

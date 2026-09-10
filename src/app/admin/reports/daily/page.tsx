@@ -58,7 +58,7 @@ type DayType = "working" | "weekly_off" | "alt_saturday_off" | "holiday";
 const dayTypeLabels: Record<DayType, string> = {
   working: "วันทำงานปกติ",
   weekly_off: "วันหยุดประจำสัปดาห์",
-  alt_saturday_off: "วันเสาร์หยุด (เสาร์เว้เสาร์)",
+  alt_saturday_off: "วันเสาร์หยุด (เสาร์เว้นเสาร์)",
   holiday: "วันหยุด",
 };
 
