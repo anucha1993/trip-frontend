@@ -25,11 +25,14 @@ type DailyRow = {
   last_check_out: string | null;
   total_hours: number;
   events: {
+    id: number;
     type: string;
     scanned_at: string;
     location: string | null;
     latitude: number | null;
     longitude: number | null;
+    is_manual: boolean;
+    note: string | null;
   }[];
 };
 
@@ -80,10 +83,17 @@ function DailyReportContent() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [manualFormFor, setManualFormFor] = useState<number | null>(null);
+  const [manualType, setManualType] = useState<"check_in" | "check_out">(
+    "check_in"
+  );
+  const [manualTime, setManualTime] = useState("08:00");
+  const [manualNote, setManualNote] = useState("");
+  const [manualSaving, setManualSaving] = useState(false);
 
-  useEffect(() => {
+  function loadReport() {
     setLoading(true);
-    adminApi
+    return adminApi
       .get("/admin/reports/daily", { params: { date } })
       .then(({ data }) => {
         setRows(data.rows);
@@ -91,7 +101,41 @@ function DailyReportContent() {
         setHolidayName(data.holiday_name);
       })
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
+
+  function openManualForm(employeeId: number) {
+    setManualFormFor(employeeId);
+    setManualType("check_in");
+    setManualTime("08:00");
+    setManualNote("");
+  }
+
+  async function submitManual(employeeId: number) {
+    setManualSaving(true);
+    try {
+      await adminApi.post("/admin/attendance", {
+        employee_id: employeeId,
+        type: manualType,
+        scanned_at: `${date} ${manualTime}:00`,
+        note: manualNote || undefined,
+      });
+      setManualFormFor(null);
+      await loadReport();
+    } finally {
+      setManualSaving(false);
+    }
+  }
+
+  async function deleteManual(id: number) {
+    if (!confirm("ลบรายการที่เพิ่มด้วยมือนี้?")) return;
+    await adminApi.delete(`/admin/attendance/${id}`);
+    await loadReport();
+  }
 
   async function handleExport() {
     setExporting(true);
@@ -223,8 +267,8 @@ function DailyReportContent() {
                         </p>
                       )}
                       <ul className="space-y-1 text-xs text-slate-500">
-                        {row.events.map((event, idx) => (
-                          <li key={idx}>
+                        {row.events.map((event) => (
+                          <li key={event.id}>
                             {dayjs(event.scanned_at).format("HH:mm")} (
                             {event.location ?? "-"})
                             {event.latitude !== null && event.longitude !== null ? (
@@ -242,9 +286,93 @@ function DailyReportContent() {
                             ) : (
                               <span className="ml-1 text-red-500">(ไม่มีพิกัด)</span>
                             )}
+                            {event.is_manual && (
+                              <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                                ✍️ เพิ่มเอง ({event.type === "check_in" ? "เข้า" : "ออก"})
+                              </span>
+                            )}
+                            {event.note && (
+                              <span className="ml-2 italic text-slate-400">
+                                &quot;{event.note}&quot;
+                              </span>
+                            )}
+                            {event.is_manual && (
+                              <button
+                                onClick={() => deleteManual(event.id)}
+                                className="ml-2 text-red-500 underline"
+                              >
+                                ลบ
+                              </button>
+                            )}
                           </li>
                         ))}
                       </ul>
+
+                      <div className="mt-3 border-t border-slate-200 pt-3">
+                        {manualFormFor === row.employee_id ? (
+                          <div className="flex flex-wrap items-end gap-2">
+                            <div>
+                              <label className="block text-[11px] text-slate-400">
+                                ประเภท
+                              </label>
+                              <select
+                                value={manualType}
+                                onChange={(e) =>
+                                  setManualType(
+                                    e.target.value as "check_in" | "check_out"
+                                  )
+                                }
+                                className="rounded-lg border border-slate-300 px-2 py-1 text-xs"
+                              >
+                                <option value="check_in">เข้างาน</option>
+                                <option value="check_out">ออกงาน</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[11px] text-slate-400">
+                                เวลา
+                              </label>
+                              <input
+                                type="time"
+                                value={manualTime}
+                                onChange={(e) => setManualTime(e.target.value)}
+                                className="rounded-lg border border-slate-300 px-2 py-1 text-xs"
+                              />
+                            </div>
+                            <div className="min-w-[180px] flex-1">
+                              <label className="block text-[11px] text-slate-400">
+                                หมายเหตุ (เช่น ไปหน้างานโดยตรง)
+                              </label>
+                              <input
+                                type="text"
+                                value={manualNote}
+                                onChange={(e) => setManualNote(e.target.value)}
+                                className="w-full rounded-lg border border-slate-300 px-2 py-1 text-xs"
+                              />
+                            </div>
+                            <button
+                              onClick={() => submitManual(row.employee_id)}
+                              disabled={manualSaving}
+                              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                            >
+                              {manualSaving ? "กำลังบันทึก..." : "บันทึก"}
+                            </button>
+                            <button
+                              onClick={() => setManualFormFor(null)}
+                              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-500"
+                            >
+                              ยกเลิก
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => openManualForm(row.employee_id)}
+                            className="text-xs font-medium text-emerald-600 underline"
+                          >
+                            ✍️ เพิ่มบันทึกเวลาด้วยมือ
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )}
