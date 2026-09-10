@@ -225,7 +225,6 @@ function DailyReportContent() {
                       <ul className="space-y-1 text-xs text-slate-500">
                         {row.events.map((event, idx) => (
                           <li key={idx}>
-                            {event.type === "check_in" ? "เข้า" : "ออก"} —{" "}
                             {dayjs(event.scanned_at).format("HH:mm")} (
                             {event.location ?? "-"})
                             {event.latitude !== null && event.longitude !== null ? (
