@@ -1,4 +1,4 @@
-# Trip Time Attendance — Frontend (Next.js)
+# TIP168 Time Attandence — Frontend (Next.js)
 
 หน้าเว็บสำหรับระบบลงเวลาเข้า-ออกงาน แบ่งเป็น 2 ส่วน:
 

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trip Time Attendance",
+  title: "TIP168 Time Attandence",
   description: "ระบบสแกน QR Code ลงเวลาเข้า-ออกงาน",
 };
 

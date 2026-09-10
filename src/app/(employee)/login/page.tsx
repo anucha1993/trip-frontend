@@ -51,7 +51,7 @@ function LoginContent() {
           ⏱️
         </div>
         <h1 className="text-xl font-bold text-slate-900">
-          Trip Time Attendance
+          TIP168 Time Attandence
         </h1>
         <p className="text-sm text-slate-500">
           สแกน QR Code เพื่อลงเวลาเข้า-ออกงาน

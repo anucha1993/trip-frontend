@@ -27,7 +27,7 @@ export default function AdminShell({
     <div className="flex min-h-screen bg-slate-100">
       <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
         <div className="px-5 py-6">
-          <p className="text-lg font-bold text-slate-900">Trip Attendance</p>
+          <p className="text-lg font-bold text-slate-900">TIP168 Time Attandence</p>
           <p className="text-xs text-slate-400">SuperAdmin Panel</p>
         </div>
         <nav className="flex-1 space-y-1 px-3">

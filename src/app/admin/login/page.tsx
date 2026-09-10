@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
       >
         <h1 className="text-xl font-bold text-slate-900">SuperAdmin Login</h1>
         <p className="mt-1 text-sm text-slate-400">
-          ระบบจัดการ Trip Time Attendance
+          ระบบจัดการ TIP168 Time Attandence
         </p>
 
         <div className="mt-6 space-y-4">
