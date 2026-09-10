@@ -47,6 +47,8 @@ type WorkSettings = {
   late_grace_minutes: number;
   weekly_off_day: number;
   alt_saturday_enabled: boolean;
+  alternate_scan_mode: boolean;
+  min_scan_interval_minutes: number;
 };
 
 function WorkTimeSettingsForm() {
@@ -66,6 +68,8 @@ function WorkTimeSettingsForm() {
           late_grace_minutes: data.late_grace_minutes,
           weekly_off_day: data.weekly_off_day,
           alt_saturday_enabled: data.alt_saturday_enabled,
+          alternate_scan_mode: data.alternate_scan_mode,
+          min_scan_interval_minutes: data.min_scan_interval_minutes,
         })
       )
       .finally(() => setLoading(false));
@@ -188,6 +192,50 @@ function WorkTimeSettingsForm() {
             />
             เปิดใช้ &quot;เสาร์เว้เสาร์&quot; (เสาร์แรกของเดือนทำงานเสมอ สลับหยุด-ทำงานทุกสัปดาห์)
           </label>
+
+          <div className="border-t border-slate-100 pt-4">
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={settings.alternate_scan_mode}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    alternate_scan_mode: e.target.checked,
+                  })
+                }
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              เปิดใช้โหมดสลับเข้า-ออกทุกครั้งที่สแกน (สำหรับพักเที่ยง/ออกนอกสถานที่หลายรอบ)
+            </label>
+            <p className="mt-1 text-xs text-slate-400">
+              ค่าเริ่มต้น (ปิดอยู่): สแกนครั้งแรกของวันคือ &quot;เข้า&quot; เสมอ
+              และทุกครั้งหลังจากนั้นคือ &quot;ออก&quot; เสมอ ไม่ว่าจะสแกนกี่ครั้งก็ตาม —
+              ถ้าเปิดใช้ จะสลับเข้า/ออกทุกครั้งที่สแกนแทน
+            </p>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              ระยะห่างขั้นต่ำระหว่างการสแกน (นาที)
+            </label>
+            <input
+              type="number"
+              min={0}
+              max={180}
+              value={settings.min_scan_interval_minutes}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  min_scan_interval_minutes: Number(e.target.value),
+                })
+              }
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              ถ้าสแกนถี่กว่านี้ ระบบจะปฏิเสธและแจ้งให้รอ (0 = ไม่จำกัด) ป้องกันสแกนซ้ำโดยไม่ตั้งใจ
+            </p>
+          </div>
         </div>
       )}
 

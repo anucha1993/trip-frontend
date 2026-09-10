@@ -35,6 +35,19 @@ function ScanContent() {
   } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [requestingLocation, setRequestingLocation] = useState(false);
+  const [holdSeconds, setHoldSeconds] = useState(0);
+
+  // Keep the result on screen for a few seconds so the employee can clearly
+  // read the check-in/out confirmation before scanning again — otherwise
+  // they tend to assume the scan failed and re-scan repeatedly.
+  useEffect(() => {
+    if (!result) return;
+    setHoldSeconds(10);
+    const interval = setInterval(() => {
+      setHoldSeconds((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [result]);
 
   async function requestLocation() {
     setRequestingLocation(true);
@@ -228,9 +241,10 @@ function ScanContent() {
             )}
             <button
               onClick={scanAgain}
-              className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+              disabled={holdSeconds > 0}
+              className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
             >
-              สแกนอีกครั้ง
+              {holdSeconds > 0 ? `สแกนอีกครั้ง (รอ ${holdSeconds} วิ)` : "สแกนอีกครั้ง"}
             </button>
           </div>
         )}

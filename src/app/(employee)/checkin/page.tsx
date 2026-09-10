@@ -32,6 +32,18 @@ function CheckinContent() {
   const [submitting, setSubmitting] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [requestingLocation, setRequestingLocation] = useState(false);
+  const [holdSeconds, setHoldSeconds] = useState(0);
+
+  // Keep the confirmation on screen for a few seconds so the employee is
+  // confident the check-in/out registered before navigating away.
+  useEffect(() => {
+    if (!result) return;
+    setHoldSeconds(10);
+    const interval = setInterval(() => {
+      setHoldSeconds((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [result]);
 
   function submitWithLocation() {
     if (!token) return;
@@ -145,9 +157,10 @@ function CheckinContent() {
           )}
           <button
             onClick={() => router.replace("/")}
-            className="mt-5 rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white"
+            disabled={holdSeconds > 0}
+            className="mt-5 rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
-            กลับหน้าแรก
+            {holdSeconds > 0 ? `กลับหน้าแรก (รอ ${holdSeconds} วิ)` : "กลับหน้าแรก"}
           </button>
         </div>
       )}
